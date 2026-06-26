@@ -1,0 +1,33 @@
+Collecting posthog
+  Downloading posthog-7.20.5-py3-none-any.whl.metadata (5.0 kB)
+Collecting requests<3.0,>=2.7 (from posthog)
+  Using cached requests-2.34.2-py3-none-any.whl.metadata (4.8 kB)
+Collecting backoff>=1.10.0 (from posthog)
+  Downloading backoff-2.2.1-py3-none-any.whl.metadata (14 kB)
+Collecting distro>=1.5.0 (from posthog)
+  Using cached distro-1.9.0-py3-none-any.whl.metadata (6.8 kB)
+Collecting typing-extensions>=4.2.0 (from posthog)
+  Using cached typing_extensions-4.15.0-py3-none-any.whl.metadata (3.3 kB)
+Collecting charset_normalizer<4,>=2 (from requests<3.0,>=2.7->posthog)
+  Downloading charset_normalizer-3.4.7-cp313-cp313-win_amd64.whl.metadata (41 kB)
+Collecting idna<4,>=2.5 (from requests<3.0,>=2.7->posthog)
+  Using cached idna-3.18-py3-none-any.whl.metadata (6.1 kB)
+Collecting urllib3<3,>=1.26 (from requests<3.0,>=2.7->posthog)
+  Using cached urllib3-2.7.0-py3-none-any.whl.metadata (6.9 kB)
+Collecting certifi>=2023.5.7 (from requests<3.0,>=2.7->posthog)
+  Using cached certifi-2026.6.17-py3-none-any.whl.metadata (2.5 kB)
+Downloading posthog-7.20.5-py3-none-any.whl (303 kB)
+Using cached requests-2.34.2-py3-none-any.whl (73 kB)
+Downloading charset_normalizer-3.4.7-cp313-cp313-win_amd64.whl (158 kB)
+Using cached idna-3.18-py3-none-any.whl (65 kB)
+Using cached urllib3-2.7.0-py3-none-any.whl (131 kB)
+Downloading backoff-2.2.1-py3-none-any.whl (15 kB)
+Using cached certifi-2026.6.17-py3-none-any.whl (133 kB)
+Using cached distro-1.9.0-py3-none-any.whl (20 kB)
+Using cached typing_extensions-4.15.0-py3-none-any.whl (44 kB)
+Installing collected packages: urllib3, typing-extensions, idna, distro, charset_normalizer, certifi, backoff, requests, posthog
+
+Successfully installed backoff-2.2.1 certifi-2026.6.17 charset_normalizer-3.4.7 distro-1.9.0 idna-3.18 posthog-7.20.5 requests-2.34.2 typing-extensions-4.15.0 urllib3-2.7.0
+
+[notice] A new release of pip is available: 25.2 -> 26.1.2
+[notice] To update, run: python.exe -m pip install --upgrade pip
