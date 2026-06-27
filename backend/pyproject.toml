@@ -28,6 +28,9 @@ dependencies = [
     "tqdm (>=4.66.0)"
 ]
 
+# 👇 ADD THIS ACCORDING TO POETRY 2.0 TO TURN OFF WHEEL PACKAGING
+[tool.poetry]
+package-mode = false
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
