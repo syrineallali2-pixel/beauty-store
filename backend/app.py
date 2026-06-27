@@ -14,7 +14,7 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from transformers import pipeline
 from dotenv import load_dotenv
-import posthog
+
 
 # Core custom modules & official SDKs
 from search_engine import get_search_engine
@@ -27,10 +27,6 @@ load_dotenv()
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 if not GROQ_API_KEY:
     raise ValueError("GROQ_API_KEY environment variable not set")
-
-# ========== POSTHOG ==========
-posthog.project_api_key = os.getenv("POSTHOG_API_KEY")
-posthog.host = os.getenv("POSTHOG_HOST", "https://us.i.posthog.com")
 
 # Instantiating the modern asynchronous client
 client = AsyncGroq(api_key=GROQ_API_KEY)
@@ -166,7 +162,6 @@ You MUST respond with a single valid JSON object structured exactly like this:
 async def shutdown_event():
     engine = get_search_engine()
     await engine.close()
-    posthog.flush()
 
 # ========== CONTEXT REWRITER ENGINE ==========
 async def contextualize_query(messages: List[ChatMessage]) -> dict:
@@ -318,7 +313,7 @@ async def recommend(req: RecommendRequest, request: Request):
             products = [p for p in products if float(p['price']) > extracted_filters["min_price"]]
             
         try:
-            # FIX B: Send the raw message block to advice layer
+            # Send the raw message block to advice layer
             llm_payload = await asyncio.wait_for(
                 generate_advice(req.messages[-1].content, products), 
                 timeout=4.0
@@ -353,17 +348,6 @@ async def recommend(req: RecommendRequest, request: Request):
                 for p in final_products
             ],
             follow_up="Would you like to look at alternate shades or similar suggestions?" if final_products else "Try a completely different search query!"
-        )
-
-        posthog.capture(
-            distinct_id=client_ip,
-            event="product_recommendation_requested",
-            properties={
-                "query": clean_query,
-                "results_count": len(final_products),
-                "has_price_filter": bool(extracted_filters),
-                "top_k": req.top_k,
-            },
         )
 
         return response_payload
