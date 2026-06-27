@@ -1,11 +1,15 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server'; // 1. Changed Request to NextRequest
 import { Pool } from 'pg';
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
 });
 
-export async function GET(request: Request, { params }: { params: { id: string } }) {
+// 2. Updated params type to Promise<{ id: string }>
+export async function GET(
+  request: NextRequest, 
+  { params }: { params: Promise<{ id: string }> } 
+) {
   try {
     // Await params to ensure compatibility with Next.js 15+
     const resolvedParams = await params; 
