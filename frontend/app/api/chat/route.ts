@@ -27,7 +27,8 @@ export async function POST(request: Request) {
     };
 
     // FIX: Point to port 8080 (Uvicorn) to match FastAPI backend configuration, using IPv4 string to bypass Node loopback blocks
-    const BACKEND_URL = process.env.BACKEND_URL || 'http://127.0.0.1:8080';
+  
+     const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || process.env.BACKEND_URL || 'http://127.0.0.1:8080';
 
     // 4. Fire proxy-forward request to your FastAPI backend
     const response = await fetch(`${BACKEND_URL}/recommend`, {
