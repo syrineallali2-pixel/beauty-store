@@ -1,0 +1,314 @@
+@import "tailwindcss";
+
+/* ==========================================================================
+   LUMIÈRE LUXURY THEME VARIABLES
+   ========================================================================== */
+:root {
+  color-scheme: light;
+
+  /* Next.js Font Variables */
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+
+  /* Lovable App Color Tokens */
+  --rose-light: oklch(0.95 0.03 15);
+  --gold: oklch(0.88 0.1 80);
+  --blush: oklch(0.9 0.05 20);
+  --primary: #A63C52;
+  --primary-foreground: oklch(0.99 0.01 20);
+  --muted-foreground: oklch(0.55 0.03 20);
+  --border: oklch(0.92 0.02 20);
+  --secondary: oklch(0.94 0.02 20);
+  --cream: oklch(0.97 0.02 40);
+
+  /* Force luxury cream-tint background theme directly */
+  --background: oklch(0.98 0.01 40);
+  --foreground: oklch(0.25 0.05 30);
+
+  /* Shared cursor tracking variables */
+  --cursor-x: 50vw;
+  --cursor-y: 50vh;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+}
+
+/* Explicit fallback baseline override */
+body {
+  background-color: var(--background) !important;
+  color: var(--foreground) !important;
+  font-family: Arial, Helvetica, sans-serif;
+  margin: 0;
+}
+
+/* ==========================================================================
+   LUMIÈRE CUSTOM GLOBAL GLOW & ANIMATION STYLES
+   ========================================================================== */
+
+/* Background Blur Blobs */
+.blob {
+  position: absolute;
+  filter: blur(80px);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Glowing Follower Aura (Fixed positioning pipeline) */
+.cursor-glow {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.cursor-glow::before {
+  content: '';
+  position: absolute;
+  width: 600px;
+  height: 600px;
+  border-radius: 50%;
+  background: radial-gradient(circle,
+      rgba(244, 114, 182, 0.22) 0%,
+      rgba(232, 121, 249, 0.08) 40%,
+      transparent 70%);
+  transform: translate(-50%, -50%);
+  left: var(--cursor-x);
+  top: var(--cursor-y);
+  will-change: left, top;
+}
+
+/* Sparkle Follower Particles */
+.cursor-dot {
+  position: fixed;
+  pointer-events: none;
+  border-radius: 50%;
+  z-index: 9999;
+  transform: translate(-50%, -50%);
+  animation: explode 1.1s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
+  will-change: transform, opacity;
+}
+
+@keyframes explode {
+  0% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+
+  100% {
+    transform: translate(calc(-50% + var(--dx, 0px)), calc(-50% + var(--dy, 0px))) scale(0);
+    opacity: 0;
+  }
+}
+
+/* Fluid Floating Card Mechanics */
+.float-animation {
+  animation: float1 6s ease-in-out infinite;
+}
+
+.float-animation-delayed {
+  animation: float2 7s ease-in-out infinite;
+}
+
+@keyframes float1 {
+
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-15px);
+  }
+}
+
+@keyframes float2 {
+
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(12px);
+  }
+}
+
+/* Gradient Text Style */
+.gradient-text {
+  background: linear-gradient(to right, #A63C52, #e879f9);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Shimmer Button Hover */
+.shimmer-btn {
+  background-color: #A63C52;
+  color: white;
+  transition: all 0.3s ease;
+}
+
+.shimmer-btn:hover {
+  background-color: #8F3045;
+  transform: translateY(-1px);
+}
+
+/* Reveal Animations on Scroll (Added immediate fallback override helper) */
+/* ==========================================================================
+   REVEAL ANIMATIONS SAFEGUARD
+   ========================================================================== */
+.reveal {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Forces elements to be visible once the observer triggers */
+.reveal.visible {
+  opacity: 1 !important;
+  transform: translateY(0) !important;
+}
+
+/* SAFEGUARD: If JavaScript fails or hasn't loaded yet, 
+   this ensures your critical hero fold content is never invisible */
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Fallback: Makes sure the hero text is visible on initial load */
+main:first-of-type .reveal,
+section:first-of-type .reveal {
+  animation: fallbackFadeIn 0.5s ease forwards;
+}
+
+@keyframes fallbackFadeIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Custom glass styling for cards */
+.glass-card {
+  background: rgba(255, 255, 255, 0.45);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* ==========================================================================
+   LUMIÈRE LUXURY FLOATING ANIMATIONS
+   ========================================================================== */
+
+/* Card 1: Smooth vertical drifting loop */
+/* Glass Card styling (lines 208-227) */
+.glass-card {
+  background: oklch(1 0 0 / 0.6);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid oklch(1 0 0 / 0.3);
+  box-shadow:
+    0 4px 24px oklch(0.2 0.02 30 / 0.06),
+    inset 0 1px 0 oklch(1 0 0 / 0.4);
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 0.4s ease,
+    background 0.3s ease;
+}
+
+.glass-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow:
+    0 20px 48px oklch(0.2 0.02 30 / 0.12),
+    inset 0 1px 0 oklch(1 0 0 / 0.5);
+  background: oklch(1 0 0 / 0.75);
+}
+
+/* Zooming the image on card hover (lines 238-246) */
+.glass-card img {
+  transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.glass-card:hover img {
+  transform: scale(1.08);
+}
+
+
+/* Floating animation (lines 395-407) */
+@keyframes float {
+
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-12px);
+  }
+}
+
+.float-animation {
+  animation: float 4s ease-in-out infinite;
+}
+
+.float-animation-delayed {
+  animation: float 4s ease-in-out 1s infinite;
+}
+
+#smooth-wrapper {
+  overflow: hidden;
+  width: 100%;
+  height: 100%;
+}
+
+#smooth-content {
+  overflow: visible;
+  width: 100%;
+}
+
+.clip-reveal {
+  clip-path: inset(100% 0% 0% 0%);
+  will-change: clip-path;
+}
+
+.clip-reveal.is-visible {
+  clip-path: inset(0% 0% 0% 0%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .clip-reveal {
+    clip-path: inset(0% 0% 0% 0%);
+  }
+}
+
+/* 1. Define the sliding keyframes */
+@keyframes marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%); /* Moves the track by half its width */
+  }
+}
+
+/* 2. Apply it to the track class */
+.marquee-track {
+  display: flex;
+  width: max-content; /* Critical: keeps the track at its full natural width */
+  animation: marquee 30s linear infinite;
+}
+
+/* Optional: Pauses the text when a user hovers over it */
+.marquee-track:hover {
+  animation-play-state: paused;
+}
+
