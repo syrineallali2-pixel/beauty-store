@@ -12,14 +12,11 @@ from fastapi import FastAPI, HTTPException, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
-from transformers import pipeline
 from dotenv import load_dotenv
-
 
 # Core custom modules & official SDKs
 from search_engine import get_search_engine
 from groq import AsyncGroq
-
 
 load_dotenv()
 
@@ -34,20 +31,7 @@ client = AsyncGroq(api_key=GROQ_API_KEY)
 # ========== FASTAPI ==========
 app = FastAPI(title="Beauty AI Search Engine")
 
-# Initialize the Input Noise Guardrail Model (~240MB)
-print("Loading Input Noise Guardrail Model...")
-guardrail_classifier = pipeline(
-    "text-classification", 
-    model="TangoBeeAkto/gibberish-detector"
-)
-
-# Initialize the Malicious Intent/Injection Shield (~400MB)
-print("Loading Malicious Payload Shield...")
-security_shield = pipeline(
-    "text-classification", 
-    model="protectai/deberta-v3-base-prompt-injection-v2"
-)
-print("All Enterprise Security Layers Online! 🛡️")
+print("Lightweight Production Security Layers Online! 🛡️")
 
 app.add_middleware(
     CORSMiddleware,
@@ -279,27 +263,7 @@ async def recommend(req: RecommendRequest, request: Request):
             follow_up="Try typing something like 'matte red lipstick'."
         )
 
-    try:
-        sec_result = security_shield(clean_query)[0]
-        if sec_result['label'] == 'INJECTION' and sec_result['score'] > 0.85:
-            return RecommendResponse(
-                advice="Security exception: System override intent detected.",
-                products=[],
-                follow_up="Please input a standard product search query."
-            )
-    except Exception as sec_err:
-        print(f"⚠️ Security shield execution warning: {sec_err}")
-
-    try:
-        guard_result = guardrail_classifier(clean_query)[0]
-        if guard_result['label'].lower() in ['noise', 'word_salad'] and guard_result['score'] > 0.75:
-            return RecommendResponse(
-                advice="I couldn't process that query. Please tell me what type of beauty products you are looking for!",
-                products=[],
-                follow_up="Try searching for terms like 'waterproof mascara'."
-            )
-    except Exception as eval_err:
-        print(f"⚠️ Guardrail execution warning: {eval_err}")
+    # Core robust regex system filters malicious intents efficiently without needing local pipelines
 
     engine = get_search_engine()
     
