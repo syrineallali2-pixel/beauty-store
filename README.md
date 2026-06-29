@@ -1,60 +1,109 @@
-# Lumiere Beauty AI Frontend
+# ✦ Lumière: AI-Powered Luxury Beauty Store
 
-Lumiere is a full-stack beauty shopping and recommendation experience. The frontend is built with Next.js and provides a polished storefront, product search, product detail pages, cart management, Firebase authentication, and an AI beauty assistant.
+Lumière is a premium, high-fidelity e-commerce experience featuring an **Async Retrieval-Augmented Generation (RAG) Search Engine**. It integrates a hybrid relational-semantic vector database, an offline NLP-driven classification pipeline, and an interactive LLM beauty advisor.
 
-The app connects to:
-- Next.js API routes for product search, featured products, and product details.
-- A FastAPI recommendation backend for AI-assisted beauty advice.
-- PostgreSQL for product catalog data.
-- Firebase for authentication and chat history.
+---
 
-## Key Features
+## 🏗️ System Architecture
 
-- Luxury beauty homepage with scroll-based reveal animations.
-- Product discovery, search, and product detail pages.
-- Cart state powered by Zustand.
-- Google sign-in through Firebase.
-- AI beauty assistant with saved conversations.
-- Backend proxy route for recommendation requests.
-- Responsive styling with Tailwind CSS.
-- GSAP-powered reveal animation for editorial sections.
+```mermaid
+graph TD
+    %% Frontend Layer
+    subgraph Frontend [Next.js App Router & React 19]
+        UI[Lumière Shop UI & GSAP Animations]
+        Cart[Zustand Cart Store]
+        Auth[Firebase Google Auth & Firestore]
+        ChatWidget[Floating AI Advisor widget]
+    end
 
-## Tech Stack
+    %% API Gateway Layer
+    subgraph Backend [FastAPI Service]
+        Limiter[Token Bucket Rate Limiter & Input Sanitizer]
+        RAG[RAG Orchestrator]
+        Groq[Groq Llama-3.3 API]
+    end
 
-- Next.js 16
-- React 19
-- TypeScript
-- Tailwind CSS
-- Firebase
-- Zustand
-- PostgreSQL client
-- GSAP
+    %% Storage & Indexing Layer
+    subgraph Storage [Database & Search Engine]
+        Engine[Hybrid Search Routing Engine]
+        Postgres[(PostgreSQL + pgvector)]
+        HNSW[HNSW Cosine Vector Index]
+    end
 
-## Project Structure
+    %% Ingestion Pipeline Layer
+    subgraph Ingestion [Offline Data Ingestion Pipeline]
+        RawData[data/clean_products.json]
+        EnrichPipeline[Stage 1: BART Zero-Shot Classifier]
+        EnrichedData[data/enriched_products.json]
+        LoadPipeline[Stage 2: BAAI/bge-base-en-v1.5 Embedder]
+    end
 
-```txt
-frontend/
-├── app/
-│   ├── page.tsx                 # Homepage
-│   ├── explore/page.tsx         # Product catalog
-│   ├── product/[id]/page.tsx    # Product details
-│   ├── cart/page.tsx            # Shopping cart
-│   ├── search/page.tsx          # Search results
-│   └── api/                     # Next.js API routes
-├── components/
-│   ├── AIChat.tsx               # AI assistant widget
-│   ├── FeaturedProducts.tsx     # Homepage product section
-│   └── SearchBar.tsx            # Search input and preview menu
-├── lib/
-│   ├── cartStore.ts             # Zustand cart store
-│   └── firebase.ts              # Firebase client setup
-└── public/                      # Images and static assets
+    %% Interconnections
+    UI --> ChatWidget
+    ChatWidget <--> Auth
+    ChatWidget <--> Cart
+    ChatWidget <--> |REST API| Limiter
+    Limiter --> RAG
+    RAG <--> |1. Rewrite & Extract Filters / 3. Generate Advice| Groq
+    RAG --> |2. Execute Query| Engine
+    Engine --> Postgres
+    Postgres --> HNSW
+    
+    RawData --> EnrichPipeline --> EnrichedData --> LoadPipeline --> Postgres
 ```
 
-## Environment Variables
+---
 
-Create `frontend/.env.local` and configure the values used by Firebase, PostgreSQL, and the backend proxy.
+## ⚡ Core Features
 
+1. **High-Performance Hybrid Search Engine** ([search_engine.py](file:///e:/beauty-api/backend/search_engine.py))
+   Routes search queries dynamically into three paradigms:
+   * **Pure Relational**: SQL filters for structured metadata (e.g., `product_type`, `price`, `color`).
+   * **Pure Semantic**: Cosine similarity vector search using `pgvector` with $768$-dimension embeddings (`BAAI/bge-base-en-v1.5`).
+   * **True Hybrid Search**: Blends both relational SQL predicates and semantic vector calculations on a fast HNSW database index.
+2. **Context-Aware Conversational RAG** ([app.py](file:///e:/beauty-api/backend/app.py))
+   * **Query Contextualizer**: Groq-based Llama-3.3-70B model parses chat history, extracts mathematical price filters, and rewrites messages into standalone queries.
+   * **Dual LLM Verification**: Generates tailored beauty suggestions in JSON Mode, aligning matching products directly with database entries.
+3. **Offline ML Enrichment Pipeline**
+   * **Stage 1 ([enrich_catalog.py](file:///e:/beauty-api/backend/enrich_catalog.py))**: Classifies product catalog descriptions through `facebook/bart-large-mnli` zero-shot classification to standardize finishes and colors.
+   * **Stage 2 ([load_products.py](file:///e:/beauty-api/backend/load_products.py))**: Computes embeddings using BGE-v1.5 and upserts them into PostgreSQL with active HNSW index updates.
+4. **Rich Luxury Frontend** ([page.tsx](file:///e:/beauty-api/frontend/app/page.tsx))
+   * Seamless GSAP scroll reveal animations, dynamic mouse trails, and glassmorphism styling.
+   * Session persistence using Firebase Firestore.
+   * Global state management for checkout/shopping cart using Zustand.
+
+---
+
+## 📁 Key File Structure
+
+```text
+├── backend/
+│   ├── app.py                # FastAPI API gateway & RAG orchestration
+│   ├── search_engine.py      # Hybrid vector & structured postgres search routing
+│   ├── ranking_model.py      # Multi-criteria Learning-to-Rank engine (optional)
+│   ├── enrich_catalog.py     # Stage 1: Zero-shot NLP classifier (BART)
+│   ├── load_products.py      # Stage 2: Embed (BGE-v1.5) & ingestion script
+│   └── setup_db.py           # PostgreSQL tables & HNSW indices initialization
+├── data/
+│   ├── clean_products.json   # Raw product dataset
+│   └── enriched_products.json# NLP-standardized products dataset
+└── frontend/
+    ├── app/                  # Next.js App Router pages
+    ├── components/           # UI elements (AIChat, FeaturedProducts, etc.)
+    └── lib/                  # Stores (Zustand) & Client SDK Configs (Firebase)
+```
+
+---
+
+## ⚙️ Environment Variables
+
+### Backend (`backend/.env`)
+```env
+DATABASE_URL=postgresql://<user>:<password>@<host>/<db>
+GROQ_API_KEY=gsk_...
+```
+
+### Frontend (`frontend/.env.local`)
 ```env
 NEXT_PUBLIC_FIREBASE_API_KEY=
 NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=
@@ -63,69 +112,46 @@ NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=
 NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=
 NEXT_PUBLIC_FIREBASE_APP_ID=
 
-DATABASE_URL=
+DATABASE_URL=postgresql://<user>:<password>@<host>/<db>
 BACKEND_URL=http://127.0.0.1:8080
 ```
 
-Do not commit real API keys or database credentials.
+---
 
-## Getting Started
+## 🚀 Quick Setup
 
-Install dependencies:
+### 1. Ingest Data & Run Backend
+Navigate to `backend/`, configure `.env`, install requirements, and run:
+```bash
+# 1. Standardize finishes/colors using local BART model
+python enrich_catalog.py
 
+# 2. Setup PostgreSQL database tables and HNSW indices
+python setup_db.py
+
+# 3. Compute BGE embeddings and load catalog into PostgreSQL
+python load_products.py
+
+# 4. Start the API server
+python app.py
+```
+
+### 2. Launch Client Frontend
+Navigate to `frontend/`, configure `.env.local`, and run:
 ```bash
 npm install
-```
-
-Start the development server:
-
-```bash
 npm run dev
 ```
+Open `http://localhost:3000` to interact with the application.
 
-Open:
+---
 
-```txt
-http://localhost:3000
-```
+## 🌐 Deployment & Architecture
 
-## Available Scripts
+The application uses a decoupled, production-grade architecture built to handle asynchronous machine learning workloads efficiently.
 
-```bash
-npm run dev      # Start local development server
-npm run build    # Build production app
-npm run start    # Start production server
-npm run lint     # Run ESLint
-```
-
-## Backend Connection
-
-The chat assistant calls `app/api/chat/route.ts`, which forwards requests to the FastAPI backend:
-
-```txt
-POST /recommend
-```
-
-By default, the frontend expects the backend at:
-
-```txt
-http://127.0.0.1:8080
-```
-
-Set `BACKEND_URL` in `.env.local` if your backend runs somewhere else.
-
-## Product Data
-
-Product routes read from PostgreSQL through `DATABASE_URL`:
-
-- `GET /api/products/search`
-- `GET /api/products/featured`
-- `GET /api/products/[id]`
-
-Make sure the database includes a `products` table with product names, brands, prices, image URLs, and related metadata.
-
-## Notes
-
-- The app uses `next/font`, so production builds may need internet access to fetch Google-hosted fonts.
-- The current UI relies on static assets inside `public/`.
-- The AI assistant requires the FastAPI backend to be running for recommendation responses.
+* **Frontend Hosting**: Vercel / Netlify
+* **Backend Hosting**: Deployed as a containerized serverless application on Google Cloud Run with an allocated resource limit of 4 GiB RAM and 1 CPU Boost to accommodate embedding model loads.
+* **Package Management**: Managed via Poetry inside a multi-stage Docker build utilizing a `python:3.12-slim` base image.
+* **Database**: Production PostgreSQL cluster hosted on Render.
+* **CI/CD**: Automated builds triggered via Google Cloud Build connected directly to the main repository line.
