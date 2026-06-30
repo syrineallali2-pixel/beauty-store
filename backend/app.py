@@ -7,6 +7,7 @@ import urllib.parse
 import time
 from collections import defaultdict
 from typing import Optional, List
+from contextlib import asynccontextmanager  # Required for modern lifecycle management
 
 from fastapi import FastAPI, HTTPException, Request, status
 from fastapi.middleware.cors import CORSMiddleware
@@ -28,8 +29,37 @@ if not GROQ_API_KEY:
 # Instantiating the modern asynchronous client
 client = AsyncGroq(api_key=GROQ_API_KEY)
 
+
+# ========== LIFECYCLE MANAGEMENT (EAGER WARM-UP) ==========
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # 1. EAGER LOADING: Initialize the search engine immediately on boot
+    print("🤖 Booting container: Initializing Beauty AI Search Engine...")
+    try:
+        engine = get_search_engine()
+        
+        # 2. WARM-UP PASS: Run a dummy query to pre-compile connections/indexes
+        print("🔥 Running dummy warm-up query to prevent initial delay...")
+        # Querying an empty or common string to force database/index initialization
+        await engine.search(query="warmup", filters={}, limit=1)
+        print("⚡ Warm-up complete! Backend is fully hot and ready for traffic.")
+    except Exception as warmup_err:
+        print(f"⚠️ Warm-up warning (non-fatal): {warmup_err}")
+        
+    yield  # The application runs here while yielded
+    
+    # SHUTDOWN LOGIC: Clean up database/engine pools when container exits
+    print("🛑 Shutting down container: Closing search engine resources...")
+    try:
+        engine = get_search_engine()
+        await engine.close()
+    except Exception as shutdown_err:
+        print(f"⚠️ Shutdown cleanup error: {shutdown_err}")
+
+
 # ========== FASTAPI ==========
-app = FastAPI(title="Beauty AI Search Engine")
+# Pass the lifespan context manager into your FastAPI initialization
+app = FastAPI(title="Beauty AI Search Engine", lifespan=lifespan)
 
 print("Lightweight Production Security Layers Online! 🛡️")
 
@@ -141,16 +171,17 @@ You MUST respond with a single valid JSON object structured exactly like this:
             "selected_product_ids": [str(p['id']) for p in products[:3]]
         }
 
-# ========== LIFECYCLE MANAGEMENT ==========
-@app.on_event("shutdown")
-async def shutdown_event():
-    engine = get_search_engine()
-    await engine.close()
-
+# ========== CONTEXT REWRITER ENGINE ==========
 # ========== CONTEXT REWRITER ENGINE ==========
 async def contextualize_query(messages: List[ChatMessage]) -> dict:
-    """Combines chat history into a single standalone query and extracts explicit price metrics via JSON Mode"""
-    default_response = {"query": messages[-1].content if messages else "", "min_price": None, "max_price": None}
+    """Combines chat history into a single standalone query, extracts explicit price metrics, 
+    and determines if the message is purely conversational via JSON Mode"""
+    default_response = {
+        "query": messages[-1].content if messages else "", 
+        "min_price": None, 
+        "max_price": None,
+        "is_conversational": False
+    }
     if not messages:
         return default_response
 
@@ -159,10 +190,9 @@ async def contextualize_query(messages: List[ChatMessage]) -> dict:
 
     prompt = f"""Given the following conversation history and a follow-up question, process the explicit intent into a JSON object.
 
-1. Rewrite the follow-up question into a standalone, clear search query that contains all necessary cosmetic context (event, style, product type, finishes). Do NOT answer the question, just rewrite it.
-2. Extract mathematical price filters if stated in the message or context:
-   - "min_price": Look for phrases like "above X", "more than X", "at least X", "X+". Convert to float or null.
-   - "max_price": Look for phrases like "under X", "less than X", "below X", "maximum X". Convert to float or null.
+1. "query": Rewrite the follow-up question into a standalone, clear search query that contains all necessary cosmetic context (event, style, product type, finishes). Do NOT answer the question, just rewrite it.
+2. Price Filters: Extract mathematical price filters if stated ("min_price" / "max_price").
+3. "is_conversational": Set this to true IF the latest user message is purely a pleasantry, greeting, expression of gratitude, or closing comment (e.g., "thanks", "hello", "bye", "ok cool") and does NOT request any new products or recommendations. Otherwise, set it to false.
 
 Conversation History:
 {history_str}
@@ -173,7 +203,8 @@ Return ONLY a valid JSON object matching this schema:
 {{
     "query": "standalone search query string",
     "min_price": float or null,
-    "max_price": float or null
+    "max_price": float or null,
+    "is_conversational": boolean
 }}"""
 
     try:
@@ -188,12 +219,13 @@ Return ONLY a valid JSON object matching this schema:
         return {
             "query": parsed_json.get("query", latest_user_message),
             "min_price": parsed_json.get("min_price"),
-            "max_price": parsed_json.get("max_price")
+            "max_price": parsed_json.get("max_price"),
+            "is_conversational": parsed_json.get("is_conversational", False)
         }
     except Exception as e:
         print(f"⚠️ Contextualizer/JSON Extraction Error: {e}")
         return default_response
-
+    
 # ========== ENDPOINTS ==========
 @app.post("/recommend", response_model=RecommendResponse)
 async def recommend(req: RecommendRequest, request: Request): 
@@ -213,6 +245,32 @@ async def recommend(req: RecommendRequest, request: Request):
         )
 
     context_data = await contextualize_query(req.messages)
+    
+    # 🎯 DYNAMIC SHORT-CIRCUIT: Handled by AI, no hardcoded regex!
+    if context_data.get("is_conversational"):
+        print("💬 Pure conversation detected. Skipping product retrieval.")
+        try:
+            # Let the AI talk back naturally based on the conversation history
+            conversational_response = await client.chat.completions.create(
+                model="llama-3.3-70b-versatile",
+                messages=[
+                    {"role": "system", "content": "You are a friendly beauty advisor. Respond politely to the user's greeting, thanks, or sign-off. Do NOT mention or recommend any specific products."},
+                    * [{"role": m.role, "content": m.content} for m in req.messages]
+                ],
+                temperature=0.7,
+                max_tokens=150
+            )
+            advice_reply = conversational_response.choices[0].message.content
+        except Exception as ai_err:
+            print(f"⚠️ Conversational fallback error: {ai_err}")
+            advice_reply = "You're very welcome! Let me know if you need anything else. ✨"
+
+        return RecommendResponse(
+            advice=advice_reply,
+            products=[],  # Send back a completely empty product collection
+            follow_up=None
+        )
+
     clean_query = context_data["query"]
     
     extracted_filters = {}
@@ -262,8 +320,6 @@ async def recommend(req: RecommendRequest, request: Request):
             products=[],
             follow_up="Try typing something like 'matte red lipstick'."
         )
-
-    # Core robust regex system filters malicious intents efficiently without needing local pipelines
 
     engine = get_search_engine()
     
