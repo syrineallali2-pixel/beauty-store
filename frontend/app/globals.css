@@ -38,11 +38,14 @@
 }
 
 /* Explicit fallback baseline override */
+html,
 body {
   background-color: var(--background) !important;
   color: var(--foreground) !important;
   font-family: Arial, Helvetica, sans-serif;
   margin: 0;
+  overflow-x: hidden;
+  max-width: 100%;
 }
 
 /* ==========================================================================

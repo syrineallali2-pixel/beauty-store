@@ -22,12 +22,12 @@ function SearchIcon({ className = "h-4 w-4" }: { className?: string }) {
   );
 }
 
-export default function SearchBar() {
+export default function SearchBar({ className }: { className?: string }) {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<Product[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
- const wrapperRef = useRef<HTMLFormElement>(null);
+  const wrapperRef = useRef<HTMLFormElement>(null);
   const addItem = useCartStore((state) => state.addItem);
   const router = useRouter();
 
@@ -84,7 +84,7 @@ export default function SearchBar() {
   };
 
   return (
-    <form onSubmit={handleSubmit} ref={wrapperRef} className="relative w-full max-w-xs md:max-w-md hidden sm:block z-50">
+    <form onSubmit={handleSubmit} ref={wrapperRef} className={className || "relative w-full max-w-xs md:max-w-md hidden sm:block z-50"}>
       {/* Search Input Box */}
       <div className="relative">
         <input

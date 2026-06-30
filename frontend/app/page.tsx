@@ -4,32 +4,18 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect } from 'react';
 import { useAuthState } from 'react-firebase-hooks/auth';
-import { auth, googleProvider } from '../lib/firebase';
-import { signInWithPopup, signOut } from 'firebase/auth';
+import { auth } from '../lib/firebase';
 import { useCartStore } from '../lib/cartStore';
 import AIChat from '../components/AIChat';
 import FeaturedProducts from '../components/FeaturedProducts';
+import Navbar from '../components/Navbar';
 
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import SearchBar from '../components/SearchBar';
-
-function CartIcon({ className = "h-6 w-6" }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" className={className} fill="none" aria-hidden="true">
-      <path d="M7.5 8.5h9l-.8 10.2a2 2 0 0 1-2 1.8H10a2 2 0 0 1-2-1.8L7.5 8.5Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
-      <path d="M9.5 8.5V7a2.5 2.5 0 0 1 5 0v1.5" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
-      <path d="M9.5 12.2c1.6 1.5 3.4 1.5 5 0" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-    </svg>
-  );
-}
 
 export default function Home() {
   const [user, loading] = useAuthState(auth);
   const totalItems = useCartStore((state) => state.totalItems);
-
-  const signIn = () => signInWithPopup(auth, googleProvider);
-  const signOutUser = () => signOut(auth);
 
   useEffect(() => {
     if (loading) return;
@@ -121,7 +107,7 @@ export default function Home() {
         <div id="smooth-content">
           <div className="makeup-page relative min-h-screen bg-gradient-to-tr from-[#FFF5F5] via-[#FFFBF9] to-[#FFF0F2] text-[#3D262B] selection:bg-pink-200 overflow-hidden">
 
-            <div className="absolute left-24 top-20 h-[520px] w-[360px] sm:left-32 sm:top-20 sm:h-[600px] sm:w-[420px] lg:left-44 lg:top-24 lg:h-[680px] lg:w-[500px] z-0 pointer-events-none select-none opacity-90 overflow-hidden">
+            <div className="absolute left-0 right-0 mx-auto sm:left-32 sm:right-auto top-20 h-[480px] w-[320px] sm:h-[600px] sm:w-[420px] lg:left-44 lg:top-24 lg:h-[680px] lg:w-[500px] z-0 pointer-events-none select-none opacity-40 sm:opacity-90 overflow-hidden">
               <img
                 src="/pexels-peterdanthy-37355182.jpg"
                 alt="Lumière Editorial Model"
@@ -133,44 +119,7 @@ export default function Home() {
 
             <div className="cursor-glow" aria-hidden="true" />
 
-            <nav className="mx-auto flex max-w-7xl items-center justify-between px-8 py-6 relative z-50">
-              <Link href="/" className="font-serif text-2xl font-bold tracking-wide text-[#A63C52] hover:opacity-80 transition">
-                Lumière
-              </Link>
-
-              <div className="flex-1 max-w-lg mx-8">
-                <SearchBar />
-              </div>
-
-              <div className="flex items-center gap-6">
-                <Link href="/cart" className="relative p-2 hover:scale-105 transition text-[#3D262B]">
-                  <CartIcon />
-                  {totalItems > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-[#A63C52] text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center shadow-sm">
-                      {totalItems}
-                    </span>
-                  )}
-                </Link>
-
-                {user ? (
-                  <div className="flex items-center gap-3 bg-white/70 backdrop-blur-sm p-1.5 pr-4 rounded-full shadow-sm border border-[#EAC9CE]">
-                    {user.photoURL && (
-                      <img src={user.photoURL} alt={user.displayName || "User profile"} className="w-8 h-8 rounded-full border border-pink-100" />
-                    )}
-                    <span className="text-xs font-semibold text-[#705359] hidden md:inline">
-                      {user.displayName}
-                    </span>
-                    <button onClick={signOutUser} className="text-[11px] bg-white text-[#705359] hover:bg-pink-50 border border-gray-200 px-3 py-1 rounded-full transition font-bold uppercase tracking-wider">
-                      Sign Out
-                    </button>
-                  </div>
-                ) : (
-                  <button onClick={signIn} className="bg-[#A63C52] text-white px-6 py-2.5 rounded-full text-sm font-medium hover:bg-[#8F3045] shadow-sm hover:shadow-md transition-all">
-                    Sign in with Google
-                  </button>
-                )}
-              </div>
-            </nav>
+            <Navbar />
 
             <main className="mx-auto grid max-w-7xl grid-cols-1 items-center gap-12 px-8 py-16 md:grid-cols-2 lg:py-24 relative z-10">
               <div className="space-y-6 max-w-xl">
@@ -192,17 +141,17 @@ export default function Home() {
                 </div>
               </div>
 
-              <div className="relative h-[500px]">
-                <div data-speed="0.8" className="absolute top-4 right-20 w-52 h-52 glass-card rounded-2xl float-animation overflow-hidden shadow-md">
+              <div className="relative h-[320px] sm:h-[450px] md:h-[500px] w-full max-w-lg mx-auto">
+                <div data-speed="0.8" className="absolute top-2 right-2 sm:top-4 sm:right-12 md:right-20 w-32 h-32 sm:w-44 sm:h-44 md:w-52 md:h-52 glass-card rounded-2xl float-animation overflow-hidden shadow-md">
                   <Image src="/hero-1.jpg" alt="Makeup product closeup 1" width={208} height={208} className="w-full h-full object-cover" />
                 </div>
 
-                <div data-speed="1.2" className="absolute bottom-20 left-4 w-48 h-48 glass-card rounded-2xl float-animation-delayed overflow-hidden shadow-md">
+                <div data-speed="1.2" className="absolute bottom-2 left-2 sm:bottom-12 sm:left-8 md:left-4 w-28 h-28 sm:w-40 sm:h-40 md:w-48 md:h-48 glass-card rounded-2xl float-animation-delayed overflow-hidden shadow-md">
                   <Image src="/hero-2.jpg" alt="Makeup product closeup 3" width={192} height={192} className="w-full h-full object-cover" />
                 </div>
                 <div
                   data-speed="0.8"
-                  className="absolute top-55 left-63 -translate-x-1/2 -translate-y-1/2 w-40 h-40 glass-card rounded-full float-animation overflow-hidden shadow-md"
+                  className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 sm:w-32 sm:h-32 md:w-40 md:h-40 glass-card rounded-full float-animation overflow-hidden shadow-md"
                 >
                   <img
                     src="/hero-3.jpg"

@@ -25,7 +25,7 @@ function TrashIcon({ className = "h-5 w-5" }: { className?: string }) {
 
 function CartTitle() {
   return (
-    <h1 className="text-3xl font-serif font-bold text-center mb-8 text-[#3D262B] flex items-center justify-center gap-3">
+    <h1 className="text-2xl sm:text-3xl font-serif font-bold text-center mb-8 text-[#3D262B] flex items-center justify-center gap-3">
       <CartIcon className="h-8 w-8 text-[#A63C52]" />
       Your Cart
     </h1>
@@ -40,7 +40,6 @@ export default function CartPage() {
     setMounted(true);
   }, []);
 
-  // This calculates the live price based on current item counts.
   const dynamicTotal = items.reduce((accumulator, item) => {
     return accumulator + (Number(item.price) * item.quantity);
   }, 0);
@@ -75,41 +74,46 @@ export default function CartPage() {
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-tr from-[#FFF5F5] via-[#FFFBF9] to-[#FFF0F2] py-12 text-[#3D262B]">
+    <main className="min-h-screen bg-gradient-to-tr from-[#FFF5F5] via-[#FFFBF9] to-[#FFF0F2] py-8 sm:py-12 text-[#3D262B]">
       <div className="container mx-auto px-4 max-w-3xl">
         <CartTitle />
         
         <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-sm border border-pink-100 overflow-hidden">
           {items.map((item) => (
-            <div key={item.id} className="flex gap-4 p-5 border-b border-pink-50 items-center">
-              <img 
-                src={item.image_url?.startsWith('//') ? 'https:' + item.image_url : item.image_url || '/placeholder.png'}
-                alt={item.name}
-                className="w-20 h-20 object-contain bg-gray-50 rounded-xl p-1 border border-pink-50"
-              />
-              <div className="flex-1">
-                <h3 className="font-semibold text-base text-[#3D262B] line-clamp-1">{item.name}</h3>
-                <p className="text-xs text-gray-400 font-medium uppercase tracking-wider mb-1">{item.brand || 'Lumière'}</p>
-                <p className="text-sm font-bold text-[#A63C52]">${Number(item.price).toFixed(2)}</p>
+            <div key={item.id} className="flex flex-col sm:flex-row gap-4 p-5 border-b border-pink-50 sm:items-center justify-between">
+              <div className="flex items-center gap-4 flex-1">
+                <img 
+                  src={item.image_url?.startsWith('//') ? 'https:' + item.image_url : item.image_url || '/placeholder.png'}
+                  alt={item.name}
+                  className="w-16 h-16 sm:w-20 sm:h-20 object-contain bg-gray-50 rounded-xl p-1 border border-pink-50"
+                />
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-semibold text-sm sm:text-base text-[#3D262B] line-clamp-2">{item.name}</h3>
+                  <p className="text-[10px] sm:text-xs text-gray-400 font-medium uppercase tracking-wider mb-1">{item.brand || 'Lumière'}</p>
+                  <p className="text-sm font-bold text-[#A63C52]">${Number(item.price).toFixed(2)}</p>
+                </div>
               </div>
-              <div className="flex items-center gap-3">
-                {/* Quantity selection menu */}
-                <select
-                  value={item.quantity}
-                  onChange={(e) => updateQuantity(item.id, parseInt(e.target.value))}
-                  className="border border-[#EAC9CE] bg-white text-sm rounded-xl px-3 py-1.5 font-medium text-[#705359] focus:outline-none focus:ring-1 focus:ring-[#A63C52] cursor-pointer"
-                >
-                  {[1, 2, 3, 4, 5].map(n => (
-                    <option key={n} value={n}>{n}</option>
-                  ))}
-                </select>
-                <button
-                  onClick={() => removeItem(item.id)}
-                  className="p-2 text-[#A63C52] hover:text-[#8F3045] hover:scale-110 active:scale-95 transition-transform cursor-pointer"
-                  title="Remove item"
-                >
-                  <TrashIcon />
-                </button>
+              
+              <div className="flex items-center justify-between sm:justify-end gap-4 w-full sm:w-auto pt-3 sm:pt-0 border-t sm:border-t-0 border-pink-50">
+                <span className="text-xs text-[#705359] font-medium sm:hidden">Quantity</span>
+                <div className="flex items-center gap-3">
+                  <select
+                    value={item.quantity}
+                    onChange={(e) => updateQuantity(item.id, parseInt(e.target.value))}
+                    className="border border-[#EAC9CE] bg-white text-sm rounded-xl px-3 py-1.5 font-medium text-[#705359] focus:outline-none focus:ring-1 focus:ring-[#A63C52] cursor-pointer animate-none"
+                  >
+                    {[1, 2, 3, 4, 5].map(n => (
+                      <option key={n} value={n}>{n}</option>
+                    ))}
+                  </select>
+                  <button
+                    onClick={() => removeItem(item.id)}
+                    className="p-2 text-[#A63C52] hover:text-[#8F3045] hover:scale-110 active:scale-95 transition-transform cursor-pointer"
+                    title="Remove item"
+                  >
+                    <TrashIcon />
+                  </button>
+                </div>
               </div>
             </div>
           ))}
@@ -117,17 +121,16 @@ export default function CartPage() {
           <div className="p-6 bg-pink-50/30 border-t border-pink-50">
             <div className="flex justify-between items-center mb-6">
               <span className="font-medium text-base text-[#705359]">Subtotal:</span>
-              {/* Dynamic total updates automatically */}
-              <span className="font-serif font-bold text-2xl text-[#A63C52]">${dynamicTotal.toFixed(2)}</span>
+              <span className="font-serif font-bold text-xl sm:text-2xl text-[#A63C52]">${dynamicTotal.toFixed(2)}</span>
             </div>
-            <div className="flex gap-4">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
               <button
                 onClick={clearCart}
-                className="flex-1 border border-[#EAC9CE] text-[#705359] rounded-full py-3 text-sm font-medium hover:bg-white/60 active:scale-[0.99] transition-all cursor-pointer"
+                className="w-full sm:flex-1 border border-[#EAC9CE] text-[#705359] rounded-full py-3 text-sm font-medium hover:bg-white/60 active:scale-[0.99] transition-all cursor-pointer"
               >
                 Clear Cart
               </button>
-              <button className="flex-1 bg-[#A63C52] text-white rounded-full py-3 text-sm font-medium shadow-sm hover:bg-[#8F3045] active:scale-[0.99] transition-all cursor-pointer">
+              <button className="w-full sm:flex-1 bg-[#A63C52] text-white rounded-full py-3 text-sm font-medium shadow-sm hover:bg-[#8F3045] active:scale-[0.99] transition-all cursor-pointer">
                 Checkout
               </button>
             </div>

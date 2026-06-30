@@ -3,10 +3,7 @@
 import { useState, useEffect, use } from 'react';
 import Link from 'next/link';
 import { useCartStore } from '../../../lib/cartStore';
-import SearchBar from '../../../components/SearchBar';
-import { useAuthState } from 'react-firebase-hooks/auth';
-import { auth, googleProvider } from '../../../lib/firebase';
-import { signInWithPopup, signOut } from 'firebase/auth';
+import Navbar from '../../../components/Navbar';
 
 interface ProductColor {
   hex_value: string;
@@ -30,16 +27,6 @@ interface Product {
   product_colors: ProductColor[];
 }
 
-function CartIcon({ className = "h-6 w-6" }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" className={className} fill="none" aria-hidden="true">
-      <path d="M7.5 8.5h9l-.8 10.2a2 2 0 0 1-2 1.8H10a2 2 0 0 1-2-1.8L7.5 8.5Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
-      <path d="M9.5 8.5V7a2.5 2.5 0 0 1 5 0v1.5" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
-      <path d="M9.5 12.2c1.6 1.5 3.4 1.5 5 0" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-    </svg>
-  );
-}
-
 function StarIcon({ filled }: { filled: boolean }) {
   return (
     <svg viewBox="0 0 20 20" className="h-4 w-4" fill={filled ? "currentColor" : "none"} aria-hidden="true">
@@ -49,19 +36,12 @@ function StarIcon({ filled }: { filled: boolean }) {
 }
 
 export default function ProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  // Unwrap the dynamic URL ID
   const { id } = use(params);
   
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedShade, setSelectedShade] = useState<string>('');
-  
-  const [user] = useAuthState(auth);
   const addItem = useCartStore((state) => state.addItem);
-  const totalItems = useCartStore((state) => state.totalItems);
-
-  const signIn = () => signInWithPopup(auth, googleProvider);
-  const signOutUser = () => signOut(auth);
 
   useEffect(() => {
     fetch(`/api/products/${id}`)
@@ -99,36 +79,15 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
   const activeImage = product.image_url || product.image_link || product.api_featured_image || '/placeholder.png';
   const cleanImageUrl = activeImage.startsWith('//') ? 'https:' + activeImage : activeImage;
   const activePrice = product.price_usd ?? product.price ?? 0;
-  
-  // Format rating (Fallback to 5 if undefined in DB)
   const ratingStars = Math.round(product.rating_filled || 5);
 
   return (
     <div className="min-h-screen bg-gradient-to-tr from-[#FFF5F5] via-[#FFFBF9] to-[#FFF0F2] text-[#3D262B]">
-      {/* NAVIGATION BAR */}
-      <nav className="mx-auto flex max-w-7xl items-center justify-between px-8 py-6 relative z-50 border-b border-pink-100/50">
-        <Link href="/" className="font-serif text-2xl font-bold tracking-wide text-[#A63C52] hover:opacity-80 transition">Lumière</Link>
-        <div className="flex-1 max-w-lg mx-8"><SearchBar /></div>
-        <div className="flex items-center gap-6">
-          <Link href="/cart" className="relative p-2 hover:scale-105 transition text-[#3D262B]">
-            <CartIcon />
-            {totalItems > 0 && (
-              <span className="absolute -top-1 -right-1 bg-[#A63C52] text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center shadow-sm">{totalItems}</span>
-            )}
-          </Link>
-          {user ? (
-            <button onClick={signOutUser} className="text-[11px] bg-white text-[#705359] border border-gray-200 px-3 py-1 rounded-full transition font-bold uppercase tracking-wider">Sign Out</button>
-          ) : (
-            <button onClick={signIn} className="bg-[#A63C52] text-white px-6 py-2.5 rounded-full text-sm font-medium hover:bg-[#8F3045] transition-all shadow-sm">Sign In</button>
-          )}
-        </div>
-      </nav>
+      <Navbar />
 
-      {/* PRODUCT DISPLAY SPLIT LAYOUT */}
-      <main className="max-w-7xl mx-auto px-8 py-16 grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
-        
+      <main className="max-w-7xl mx-auto px-4 sm:px-8 py-8 sm:py-16 grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16 items-center">
         {/* Left: Big Image Showcase */}
-        <div className="relative aspect-square rounded-[2.5rem] overflow-hidden bg-white shadow-xl border border-pink-50 p-8 flex items-center justify-center group">
+        <div className="relative aspect-square rounded-[2rem] sm:rounded-[2.5rem] overflow-hidden bg-white shadow-xl border border-pink-50 p-6 sm:p-8 flex items-center justify-center group">
           <img 
             src={cleanImageUrl} 
             alt={product.name} 
@@ -138,10 +97,10 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
         </div>
 
         {/* Right: Data & Interactions */}
-        <div className="space-y-8">
+        <div className="space-y-6 sm:space-y-8">
           <div>
             <p className="text-xs uppercase font-bold tracking-widest text-[#A63C52] mb-2">{product.brand || 'Lumière'}</p>
-            <h1 className="font-serif text-4xl sm:text-5xl text-[#3D262B] leading-tight mb-4">{product.name}</h1>
+            <h1 className="font-serif text-3xl sm:text-4xl md:text-5xl text-[#3D262B] leading-tight mb-4">{product.name}</h1>
             
             {/* Rating Stars & Tags */}
             <div className="flex items-center gap-4 text-sm">
@@ -158,7 +117,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
             </div>
           </div>
 
-          <p className="text-2xl font-serif font-medium text-[#3D262B] border-y border-pink-100 py-6">
+          <p className="text-xl sm:text-2xl font-serif font-medium text-[#3D262B] border-y border-pink-100 py-4 sm:py-6">
             ${Number(activePrice).toFixed(2)}
           </p>
 
@@ -168,20 +127,20 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
 
           {/* Smart Color Picker */}
           {product.product_colors?.length > 0 && (
-            <div className="space-y-4 bg-white/50 p-6 rounded-2xl border border-pink-50">
+            <div className="space-y-4 bg-white/50 p-4 sm:p-6 rounded-2xl border border-pink-50">
               <p className="text-xs text-gray-500 font-bold uppercase tracking-widest">
                 Select Shade: <span className="text-[#3D262B]">
                   {product.product_colors.find(c => c.hex_value === selectedShade)?.colour_name || 'Standard'}
                 </span>
               </p>
-              <div className="flex flex-wrap gap-3">
+              <div className="flex flex-wrap gap-2.5 sm:gap-3">
                 {product.product_colors.map((color, idx) => (
                   <button
                     key={idx}
                     title={color.colour_name}
                     onClick={() => setSelectedShade(color.hex_value)}
-                    className={`w-8 h-8 rounded-full border-2 transition-all transform hover:scale-110 ${
-                      selectedShade === color.hex_value ? 'border-[#3D262B] scale-125 shadow-md' : 'border-gray-200 hover:border-gray-400'
+                    className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 transition-all transform hover:scale-110 ${
+                      selectedShade === color.hex_value ? 'border-[#3D262B] scale-110 shadow-md' : 'border-gray-200 hover:border-gray-400'
                     }`}
                     style={{ backgroundColor: color.hex_value }}
                   />
@@ -203,7 +162,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                 quantity: 1
               });
             }}
-            className="w-full bg-[#A63C52] text-white py-4 rounded-full font-medium tracking-wide uppercase shadow-lg hover:bg-[#8F3045] hover:shadow-xl transition-all transform active:scale-[0.98]"
+            className="w-full bg-[#A63C52] text-white py-3.5 sm:py-4 rounded-full font-medium tracking-wide uppercase shadow-lg hover:bg-[#8F3045] hover:shadow-xl transition-all transform active:scale-[0.98] cursor-pointer"
           >
             Add To Bag - ${Number(activePrice).toFixed(2)}
           </button>

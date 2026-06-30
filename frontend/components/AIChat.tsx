@@ -205,7 +205,7 @@ export default function AIChat({ avatarSrc = '/ai-assistant-avatar.jpg' }: AICha
     return (
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 w-14 h-14 rounded-full shadow-lg z-50 hover:scale-110 transition overflow-hidden border-2 border-pink-400 bg-white group flex items-center justify-center"
+        className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 w-14 h-14 rounded-full shadow-lg z-50 hover:scale-110 transition overflow-hidden border-2 border-pink-400 bg-white group flex items-center justify-center"
       >
         {/* Floating Sparkles Layer positioned directly over the image */}
         <span className="absolute top-1 right-2 z-10 text-[#FFB6C1] drop-shadow-md animate-bounce">
@@ -228,7 +228,7 @@ export default function AIChat({ avatarSrc = '/ai-assistant-avatar.jpg' }: AICha
   }
 
   return (
-    <div className="fixed bottom-6 right-6 w-96 h-[600px] bg-white rounded-2xl shadow-2xl flex flex-col z-50 border">
+    <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 w-[calc(100vw-2rem)] sm:w-96 h-[500px] sm:h-[600px] max-h-[calc(100vh-6rem)] bg-white rounded-2xl shadow-2xl flex flex-col z-50 border">
       <div className="flex justify-between items-center p-4 border-b bg-pink-50 rounded-t-2xl">
         <div className="flex items-center gap-2">
           {/* Also added the custom miniature avatar to the header bar context */}
